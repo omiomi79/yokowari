@@ -1,0 +1,413 @@
+/* ヨコ割り — カッターマットをモチーフにしたダークUI */
+
+:root {
+  --bg: #131513;
+  --bg-raise: #1a1d1a;
+  --mat: #1e2b24;
+  --mat-grid: #2e4034;
+  --mat-edge: #3a5244;
+  --ink: #eaece6;
+  --ink-dim: #9aa49b;
+  --guide: #e8c547;      /* カッターガイドの黄色 */
+  --guide-dim: #b39a3a;
+  --danger: #e07a5f;
+  --radius: 10px;
+  --font-body: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  --font-mono: "Consolas", "SF Mono", "Menlo", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { color-scheme: dark; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 20px 32px;
+}
+
+/* ---------- ヘッダー ---------- */
+
+.header { margin-bottom: 36px; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.brand-mark {
+  display: inline-flex;
+  gap: 4px;
+  height: 26px;
+}
+.brand-mark i {
+  width: 9px;
+  background: var(--guide);
+  border-radius: 2px;
+}
+.brand-mark i:nth-child(2) { opacity: 0.65; }
+.brand-mark i:nth-child(3) { opacity: 0.4; }
+
+.tagline {
+  margin-top: 8px;
+  color: var(--ink-dim);
+  font-size: 0.95rem;
+}
+
+/* ---------- ドロップゾーン ---------- */
+
+.dropzone {
+  position: relative;
+  border-radius: var(--radius);
+  background:
+    linear-gradient(var(--mat-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mat-grid) 1px, transparent 1px),
+    var(--mat);
+  background-size: 28px 28px, 28px 28px, auto;
+  border: 1px solid var(--mat-edge);
+  outline: none;
+  cursor: pointer;
+  padding: 72px 24px;
+  text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.dropzone:hover,
+.dropzone:focus-visible {
+  border-color: var(--guide);
+  box-shadow: 0 0 0 1px var(--guide);
+}
+
+.dropzone.is-dragover {
+  border-color: var(--guide);
+  box-shadow: 0 0 0 2px var(--guide), 0 0 32px rgba(232, 197, 71, 0.15) inset;
+}
+
+.dropzone-icon {
+  width: 56px;
+  height: 56px;
+  fill: var(--guide);
+  margin-bottom: 16px;
+}
+
+.dropzone-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.dropzone-sub {
+  margin-top: 6px;
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+}
+
+.dropzone-formats {
+  margin-top: 18px;
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+  border: 1px solid var(--mat-edge);
+  border-radius: 99px;
+  padding: 2px 14px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- コントロール ---------- */
+
+.workspace { margin-top: 8px; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--mat-edge);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-raise);
+}
+
+.seg-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.seg-btn small {
+  font-weight: 400;
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+.seg-btn + .seg-btn { border-left: 1px solid var(--mat-edge); }
+
+.seg-btn:hover { color: var(--ink); }
+
+.seg-btn.is-active {
+  background: var(--guide);
+  color: #1c1a10;
+}
+
+.seg-btn:focus-visible {
+  outline: 2px solid var(--guide);
+  outline-offset: -2px;
+}
+
+.text-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 8px 0;
+  margin-left: auto;
+}
+.text-btn:hover { color: var(--ink); }
+.text-btn:focus-visible { outline: 2px solid var(--guide); outline-offset: 2px; }
+
+/* ---------- プレビュー（カッターマット） ---------- */
+
+.mat {
+  border-radius: var(--radius);
+  border: 1px solid var(--mat-edge);
+  background:
+    linear-gradient(var(--mat-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mat-grid) 1px, transparent 1px),
+    var(--mat);
+  background-size: 28px 28px, 28px 28px, auto;
+  padding: 24px;
+}
+
+.preview-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+#preview-canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- メタ情報 ---------- */
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin-top: 10px;
+}
+
+.meta {
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+}
+
+.mono { font-family: var(--font-mono); }
+
+.warning {
+  margin-top: 10px;
+  color: var(--danger);
+  font-size: 0.85rem;
+  border-left: 3px solid var(--danger);
+  padding-left: 10px;
+}
+
+/* ---------- ピース一覧 ---------- */
+
+.pieces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.piece {
+  background: var(--bg-raise);
+  border: 1px solid var(--mat-edge);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.piece-thumb {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  background: #000;
+}
+
+.piece-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.piece-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--guide);
+  font-size: 0.95rem;
+}
+
+.piece-size {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+}
+
+.piece-dl {
+  appearance: none;
+  border: 1px solid var(--mat-edge);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 6px 0;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.piece-dl:hover { border-color: var(--guide); color: var(--guide); }
+.piece-dl:focus-visible { outline: 2px solid var(--guide); outline-offset: 2px; }
+
+/* ---------- ダウンロード ---------- */
+
+.download-row {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.primary-btn {
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  background: var(--guide);
+  color: #1c1a10;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 13px 32px;
+  cursor: pointer;
+  transition: filter 0.12s, transform 0.08s;
+}
+.primary-btn:hover { filter: brightness(1.08); }
+.primary-btn:active { transform: translateY(1px); }
+.primary-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.download-hint {
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
+/* ---------- メモ・フッター ---------- */
+
+.notes {
+  margin-top: 56px;
+  border-top: 1px solid var(--mat-edge);
+  padding-top: 24px;
+}
+
+.notes-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.notes ul {
+  list-style: none;
+}
+
+.notes li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  color: var(--ink-dim);
+  margin-bottom: 6px;
+}
+
+.notes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 8px;
+  height: 3px;
+  background: var(--guide);
+  border-radius: 1px;
+}
+
+.footer {
+  margin-top: 48px;
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+}
+
+.footer a { color: var(--ink-dim); }
+.footer a:hover { color: var(--guide); }
+
+/* ---------- レスポンシブ・モーション ---------- */
+
+@media (max-width: 560px) {
+  .page { padding-top: 32px; }
+  .brand { font-size: 1.5rem; }
+  .dropzone { padding: 48px 16px; }
+  .text-btn { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

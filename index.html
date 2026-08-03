@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ヨコ割り — 画像を横に3・4分割してXに投稿</title>
+  <meta name="description" content="画像を横に3分割・4分割してダウンロードできる無料ツール。X（Twitter）投稿用。ブラウザ内で処理するので画像はどこにも送信されません。" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='8' y='25' width='24' height='50' fill='%23E8C547'/><rect x='38' y='25' width='24' height='50' fill='%23E8C547' opacity='.7'/><rect x='68' y='25' width='24' height='50' fill='%23E8C547' opacity='.45'/></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1 class="brand">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        ヨコ割り
+      </h1>
+      <p class="tagline">画像を横に3・4分割して、X（Twitter）にそのまま投稿できる形でダウンロード。</p>
+    </header>
+
+    <main>
+      <!-- ドロップゾーン -->
+      <section id="dropzone" class="dropzone" tabindex="0" role="button"
+               aria-label="画像を選択またはドラッグ＆ドロップ">
+        <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" hidden />
+        <div class="dropzone-inner">
+          <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="4" y="10" width="12" height="28" rx="1.5" />
+            <rect x="18" y="10" width="12" height="28" rx="1.5" opacity=".65" />
+            <rect x="32" y="10" width="12" height="28" rx="1.5" opacity=".4" />
+          </svg>
+          <p class="dropzone-title">画像をここにドロップ</p>
+          <p class="dropzone-sub">クリックで選択 ／ Ctrl+V で貼り付けもOK</p>
+          <p class="dropzone-formats">PNG・JPEG・WebP</p>
+        </div>
+      </section>
+
+      <!-- 作業エリア（画像読み込み後に表示） -->
+      <section id="workspace" class="workspace" hidden>
+        <div class="controls">
+          <div class="control-group">
+            <span class="control-label">分割数</span>
+            <div class="segmented" role="radiogroup" aria-label="分割数">
+              <button type="button" class="seg-btn is-active" data-split="3" role="radio" aria-checked="true">3分割</button>
+              <button type="button" class="seg-btn" data-split="4" role="radio" aria-checked="false">4分割</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <span class="control-label">保存形式</span>
+            <div class="segmented" role="radiogroup" aria-label="保存形式">
+              <button type="button" class="seg-btn is-active" data-format="jpeg" role="radio" aria-checked="true">JPEG <small>X推奨</small></button>
+              <button type="button" class="seg-btn" data-format="png" role="radio" aria-checked="false">PNG <small>高画質</small></button>
+            </div>
+          </div>
+          <button type="button" id="reset-btn" class="text-btn">別の画像にする</button>
+        </div>
+
+        <div class="mat">
+          <div class="preview-wrap">
+            <canvas id="preview-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <p id="src-info" class="meta mono"></p>
+          <p id="piece-info" class="meta mono"></p>
+        </div>
+        <p id="warning" class="warning" hidden></p>
+
+        <div class="pieces" id="pieces"></div>
+
+        <div class="download-row">
+          <button type="button" id="download-all" class="primary-btn">まとめてダウンロード</button>
+          <p class="download-hint">投稿するときは 1 → 2 → 3 の順に画像を選んでください</p>
+        </div>
+      </section>
+
+      <!-- 使い方メモ -->
+      <section class="notes">
+        <h2 class="notes-title">Xに投稿するときのメモ</h2>
+        <ul>
+          <li>複数枚投稿すると、タイムラインでは横に並んで1枚の絵として繋がって見えます。</li>
+          <li>JPEGなら1枚5MBまで投稿できます。このツールのJPEGは高画質（品質92%）で書き出します。</li>
+          <li>処理はすべてブラウザの中だけで行われ、画像がサーバーに送信されることはありません。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>ヨコ割り — <a href="https://github.com/" id="repo-link">GitHub</a></p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
