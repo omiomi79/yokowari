@@ -12,10 +12,12 @@
   const pieceInfoEl = document.getElementById('piece-info');
   const warningEl = document.getElementById('warning');
   const downloadAllBtn = document.getElementById('download-all');
+  const downloadHintEl = document.getElementById('download-hint');
   const resetBtn = document.getElementById('reset-btn');
 
   const state = {
     img: null,        // HTMLImageElement
+    imgId: 0,         // 読み込みごとに増やしてブロブキャッシュを無効化する
     baseName: 'image',
     split: 3,
     format: 'jpeg',   // 'jpeg' | 'png'
@@ -24,6 +26,17 @@
   const PREVIEW_MAX_W = 1600;
   const THUMB_MAX_W = 480;
   const JPEG_QUALITY = 0.92;
+
+  // スマホでは共有シート経由で「画像を保存」→ 写真アプリに保存できるようにする。
+  // PCの共有シートはかえって邪魔なので、モバイル端末に限って使う
+  const isIOS =
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isMobile = isIOS || /Android/.test(navigator.userAgent);
+  const supportsShare =
+    isMobile &&
+    typeof navigator.canShare === 'function' &&
+    navigator.canShare({ files: [new File([''], 'x.jpg', { type: 'image/jpeg' })] });
 
   // ---------- 画像の読み込み ----------
 
@@ -37,6 +50,7 @@
     img.onload = () => {
       URL.revokeObjectURL(url);
       state.img = img;
+      state.imgId++;
       state.baseName = (file.name || 'image').replace(/\.[^.]+$/, '') || 'image';
       dropzone.hidden = true;
       workspace.hidden = false;
@@ -145,6 +159,13 @@
     renderPreview(img, pieces);
     renderPieceCards(img, pieces);
 
+    // 共有シート用に書き出しを先読みしておく（エラーはダウンロード時に表示される）
+    getAllBlobs().catch(() => {});
+    downloadAllBtn.textContent = supportsShare ? 'まとめて写真に保存' : 'まとめてダウンロード';
+    downloadHintEl.textContent = supportsShare
+      ? '共有シートが開いたら「画像を保存」で写真アプリに入ります。投稿は 1 → 2 → 3 の順で'
+      : '投稿するときは 1 → 2 → 3 の順に画像を選んでください';
+
     srcInfoEl.textContent = `元画像: ${img.naturalWidth} x ${img.naturalHeight}px`;
     const widths = [...new Set(pieces.map((p) => p.w))].join(' / ');
     pieceInfoEl.textContent = `1枚あたり: ${widths} x ${img.naturalHeight}px`;
@@ -223,7 +244,9 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'piece-dl';
-      btn.textContent = `${i + 1}枚目を保存 (.${ext})`;
+      btn.textContent = supportsShare
+        ? `${i + 1}枚目だけ保存`
+        : `${i + 1}枚目を保存 (.${ext})`;
       btn.addEventListener('click', () => downloadPiece(i));
 
       card.append(thumb, head, btn);
@@ -268,26 +291,64 @@
     return `${state.baseName}_${i + 1}of${total}.${ext}`;
   }
 
-  async function downloadPiece(i) {
-    const pieces = computePieces(state.img.naturalWidth, state.split);
+  // 共有シートはタップ直後に開かないとブラウザに拒否されるので、
+  // 分割・形式が決まった時点で書き出しを先に済ませておく
+  let blobCache = { key: null, promise: null };
+
+  function getAllBlobs() {
+    const key = `${state.imgId}:${state.split}:${state.format}`;
+    if (blobCache.key !== key) {
+      const pieces = computePieces(state.img.naturalWidth, state.split);
+      blobCache = {
+        key,
+        promise: Promise.all(pieces.map((p) => pieceBlob(state.img, p))),
+      };
+    }
+    return blobCache.promise;
+  }
+
+  function toFiles(blobs) {
+    return blobs.map(
+      (b, i) => new File([b], pieceFilename(i, blobs.length), { type: b.type })
+    );
+  }
+
+  async function shareFiles(files) {
     try {
-      const blob = await pieceBlob(state.img, pieces[i]);
-      checkSize(blob);
-      saveBlob(blob, pieceFilename(i, pieces.length));
+      await navigator.share({ files, title: 'ヨコ割をください' });
+      return true;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return true; // ユーザーが共有をキャンセルしただけ
+      return false; // 共有できなければ通常ダウンロードにフォールバック
+    }
+  }
+
+  async function downloadPiece(i) {
+    try {
+      const blobs = await getAllBlobs();
+      checkSize(blobs[i]);
+      if (supportsShare) {
+        const file = toFiles(blobs)[i];
+        if (navigator.canShare({ files: [file] }) && (await shareFiles([file]))) return;
+      }
+      saveBlob(blobs[i], pieceFilename(i, blobs.length));
     } catch (err) {
       showWarning(String(err.message || err));
     }
   }
 
   downloadAllBtn.addEventListener('click', async () => {
-    const pieces = computePieces(state.img.naturalWidth, state.split);
     downloadAllBtn.disabled = true;
     downloadAllBtn.textContent = '書き出し中…';
     try {
-      for (let i = 0; i < pieces.length; i++) {
-        const blob = await pieceBlob(state.img, pieces[i]);
-        checkSize(blob);
-        saveBlob(blob, pieceFilename(i, pieces.length));
+      const blobs = await getAllBlobs();
+      blobs.forEach(checkSize);
+      if (supportsShare) {
+        const files = toFiles(blobs);
+        if (navigator.canShare({ files }) && (await shareFiles(files))) return;
+      }
+      for (let i = 0; i < blobs.length; i++) {
+        saveBlob(blobs[i], pieceFilename(i, blobs.length));
         // ブラウザが連続ダウンロードを取りこぼさないよう少し間を空ける
         await new Promise((r) => setTimeout(r, 300));
       }
@@ -295,7 +356,7 @@
       showWarning(String(err.message || err));
     } finally {
       downloadAllBtn.disabled = false;
-      downloadAllBtn.textContent = 'まとめてダウンロード';
+      downloadAllBtn.textContent = supportsShare ? 'まとめて写真に保存' : 'まとめてダウンロード';
     }
   });
 
