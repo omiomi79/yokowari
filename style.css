@@ -49,16 +49,13 @@ body {
 
 .brand-mark {
   display: inline-flex;
-  gap: 4px;
-  height: 26px;
+  flex-shrink: 0;
 }
-.brand-mark i {
-  width: 9px;
-  background: var(--guide);
-  border-radius: 2px;
+.brand-mark svg {
+  width: 44px;
+  height: 44px;
+  display: block;
 }
-.brand-mark i:nth-child(2) { opacity: 0.65; }
-.brand-mark i:nth-child(3) { opacity: 0.4; }
 
 .tagline {
   margin-top: 8px;
