@@ -14,6 +14,14 @@
   const downloadAllBtn = document.getElementById('download-all');
   const downloadHintEl = document.getElementById('download-hint');
   const resetBtn = document.getElementById('reset-btn');
+  const shareXBtn = document.getElementById('share-x');
+
+  // Xの投稿画面をツール紹介文＋URL入りで開く（画像は保存したものを手動で添付してもらう）
+  shareXBtn.href =
+    'https://x.com/intent/post' +
+    '?text=' + encodeURIComponent('画像を「ヨコ割をください」で分割しました') +
+    '&url=' + encodeURIComponent('https://omiomi79.github.io/yokowari/') +
+    '&via=omiomi79';
 
   const state = {
     img: null,        // HTMLImageElement

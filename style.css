@@ -343,6 +343,29 @@ body {
 .primary-btn:active { transform: translateY(1px); }
 .primary-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--mat-edge);
+  border-radius: 8px;
+  background: var(--bg-raise);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  text-decoration: none;
+  transition: border-color 0.12s, color 0.12s;
+}
+.share-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+.share-btn:hover { border-color: var(--guide); color: var(--guide); }
+.share-btn:focus-visible { outline: 2px solid var(--guide); outline-offset: 2px; }
+
 .download-hint {
   color: var(--ink-dim);
   font-size: 0.85rem;
