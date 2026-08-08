@@ -36,6 +36,10 @@ X（Twitter）に複数枚投稿して、横に繋がった1枚の絵として�
 npx serve .
 ```
 
+## 制作
+
+おみ（[@omiomi79](https://x.com/omiomi79)）
+
 ## ライセンス
 
 MIT

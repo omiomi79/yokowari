@@ -396,6 +396,10 @@ body {
 .footer a { color: var(--ink-dim); }
 .footer a:hover { color: var(--guide); }
 
+.footer .credit { margin-top: 4px; }
+.footer .credit a { color: var(--guide); text-decoration: none; }
+.footer .credit a:hover { text-decoration: underline; }
+
 /* ---------- レスポンシブ・モーション ---------- */
 
 @media (max-width: 560px) {
