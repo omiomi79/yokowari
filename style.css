@@ -343,6 +343,19 @@ body {
 .primary-btn:active { transform: translateY(1px); }
 .primary-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
+.share {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+}
+
+.share-text {
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+}
+
 .share-btn {
   display: inline-flex;
   align-items: center;

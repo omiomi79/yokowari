@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ヨコ割をください — 画像を横に3・4分割してXに投稿</title>
   <meta name="description" content="画像を横に3分割・4分割してダウンロードできる無料ツール。X（Twitter）投稿用。ブラウザ内で処理するので画像はどこにも送信されません。" />
+
+  <!-- SNSでリンクを貼ったときのカード表示 -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ヨコ割をください" />
+  <meta property="og:title" content="ヨコ割をください" />
+  <meta property="og:description" content="画像を横に3・4分割してX（Twitter）に投稿できる無料ツール。処理はブラウザ内で完結し、画像はどこにも送信されません。" />
+  <meta property="og:url" content="https://omiomi79.github.io/yokowari/" />
+  <meta property="og:image" content="https://omiomi79.github.io/yokowari/ogp.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@omiomi79" />
+  <meta name="twitter:creator" content="@omiomi79" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><defs><clipPath id='p'><rect x='8' y='28' width='30' height='64' rx='2'/><rect x='45' y='12' width='30' height='96' rx='2'/><rect x='82' y='28' width='30' height='64' rx='2'/></clipPath></defs><g clip-path='url(%23p)'><rect width='120' height='120' fill='%23E8C547'/><circle cx='60' cy='38' r='7' fill='%23131513'/><path d='M8 92 V80 L30 60 L46 76 L63 50 L88 76 L98 66 L112 80 V92 Z' fill='%23131513'/></g></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -86,10 +99,6 @@
 
         <div class="download-row">
           <button type="button" id="download-all" class="primary-btn">まとめてダウンロード</button>
-          <a id="share-x" class="share-btn" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            Xでシェア
-          </a>
           <p class="download-hint" id="download-hint">投稿するときは 1 → 2 → 3 の順に画像を選んでください</p>
         </div>
       </section>
@@ -103,6 +112,16 @@
           <li>iPhone・Androidでは共有シートの「画像を保存」から写真アプリに直接保存できます。</li>
           <li>処理はすべてブラウザの中だけで行われ、画像がサーバーに送信されることはありません。</li>
         </ul>
+      </section>
+
+      <section class="share">
+        <p class="share-text">このツール、まわりにも紹介してもらえると嬉しいです</p>
+        <a class="share-btn"
+           href="https://x.com/intent/post?text=画像を横に3・4分割してXに投稿できる無料ツール「ヨコ割をください」&amp;url=https://omiomi79.github.io/yokowari/&amp;via=omiomi79"
+           target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Xでシェア
+        </a>
       </section>
     </main>
 
