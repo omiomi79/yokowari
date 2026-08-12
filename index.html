@@ -24,32 +24,40 @@
 <body>
   <div class="page">
     <header class="header">
-      <h1 class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
-            <defs>
-              <clipPath id="logo-panels">
-                <rect x="8" y="28" width="30" height="64" rx="2" />
-                <rect x="45" y="12" width="30" height="96" rx="2" />
-                <rect x="82" y="28" width="30" height="64" rx="2" />
-              </clipPath>
-            </defs>
-            <g clip-path="url(#logo-panels)">
-              <rect x="0" y="0" width="120" height="120" fill="#e8c547" />
-              <circle cx="60" cy="38" r="7" fill="#131513" />
-              <path d="M8 92 V80 L30 60 L46 76 L63 50 L88 76 L98 66 L112 80 V92 Z" fill="#131513" />
-            </g>
-          </svg>
-        </span>
-        ヨコ割をください
-      </h1>
-      <p class="tagline">画像を横に3・4分割して、X（Twitter）にそのまま投稿できる形でダウンロード。</p>
+      <div class="header-top">
+        <h1 class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
+              <defs>
+                <clipPath id="logo-panels">
+                  <rect x="8" y="28" width="30" height="64" rx="2" />
+                  <rect x="45" y="12" width="30" height="96" rx="2" />
+                  <rect x="82" y="28" width="30" height="64" rx="2" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#logo-panels)">
+                <rect x="0" y="0" width="120" height="120" fill="#e8c547" />
+                <circle cx="60" cy="38" r="7" fill="#131513" />
+                <path d="M8 92 V80 L30 60 L46 76 L63 50 L88 76 L98 66 L112 80 V92 Z" fill="#131513" />
+              </g>
+            </svg>
+          </span>
+          <span data-i18n="brand">ヨコ割をください</span>
+        </h1>
+
+        <div class="lang" role="group" aria-label="Language / 言語">
+          <button type="button" class="lang-btn" data-lang="ja" lang="ja" aria-pressed="true">日本語</button>
+          <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false">English</button>
+          <button type="button" class="lang-btn" data-lang="ko" lang="ko" aria-pressed="false">한국어</button>
+        </div>
+      </div>
+      <p class="tagline" data-i18n="tagline">画像を横に3・4分割して、X（Twitter）にそのまま投稿できる形でダウンロード。</p>
     </header>
 
     <main>
       <!-- ドロップゾーン -->
       <section id="dropzone" class="dropzone" tabindex="0" role="button"
-               aria-label="画像を選択またはドラッグ＆ドロップ">
+               data-i18n-aria="dropAria" aria-label="画像を選択またはドラッグ＆ドロップ">
         <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" hidden />
         <div class="dropzone-inner">
           <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
@@ -57,8 +65,8 @@
             <rect x="18" y="10" width="12" height="28" rx="1.5" opacity=".65" />
             <rect x="32" y="10" width="12" height="28" rx="1.5" opacity=".4" />
           </svg>
-          <p class="dropzone-title">画像をここにドロップ</p>
-          <p class="dropzone-sub">クリックで選択 ／ Ctrl+V で貼り付けもOK</p>
+          <p class="dropzone-title" data-i18n="dropTitle">画像をここにドロップ</p>
+          <p class="dropzone-sub" data-i18n="dropSub">クリックで選択 ／ Ctrl+V で貼り付けもOK</p>
           <p class="dropzone-formats">PNG・JPEG・WebP</p>
         </div>
       </section>
@@ -67,20 +75,20 @@
       <section id="workspace" class="workspace" hidden>
         <div class="controls">
           <div class="control-group">
-            <span class="control-label">分割数</span>
-            <div class="segmented" role="radiogroup" aria-label="分割数">
-              <button type="button" class="seg-btn is-active" data-split="3" role="radio" aria-checked="true">3分割</button>
-              <button type="button" class="seg-btn" data-split="4" role="radio" aria-checked="false">4分割</button>
+            <span class="control-label" data-i18n="splitLabel">分割数</span>
+            <div class="segmented" role="radiogroup" data-i18n-aria="splitLabel" aria-label="分割数">
+              <button type="button" class="seg-btn is-active" data-split="3" role="radio" aria-checked="true" data-i18n="split3">3分割</button>
+              <button type="button" class="seg-btn" data-split="4" role="radio" aria-checked="false" data-i18n="split4">4分割</button>
             </div>
           </div>
           <div class="control-group">
-            <span class="control-label">保存形式</span>
-            <div class="segmented" role="radiogroup" aria-label="保存形式">
-              <button type="button" class="seg-btn is-active" data-format="jpeg" role="radio" aria-checked="true">JPEG <small>X推奨</small></button>
-              <button type="button" class="seg-btn" data-format="png" role="radio" aria-checked="false">PNG <small>高画質</small></button>
+            <span class="control-label" data-i18n="formatLabel">保存形式</span>
+            <div class="segmented" role="radiogroup" data-i18n-aria="formatLabel" aria-label="保存形式">
+              <button type="button" class="seg-btn is-active" data-format="jpeg" role="radio" aria-checked="true">JPEG <small data-i18n="jpegNote">X推奨</small></button>
+              <button type="button" class="seg-btn" data-format="png" role="radio" aria-checked="false">PNG <small data-i18n="pngNote">高画質</small></button>
             </div>
           </div>
-          <button type="button" id="reset-btn" class="text-btn">別の画像にする</button>
+          <button type="button" id="reset-btn" class="text-btn" data-i18n="reset">別の画像にする</button>
         </div>
 
         <div class="mat">
@@ -105,32 +113,33 @@
 
       <!-- 使い方メモ -->
       <section class="notes">
-        <h2 class="notes-title">Xに投稿するときのメモ</h2>
+        <h2 class="notes-title" data-i18n="notesTitle">Xに投稿するときのメモ</h2>
         <ul>
-          <li>複数枚投稿すると、タイムラインでは横に並んで1枚の絵として繋がって見えます。</li>
-          <li>JPEGなら1枚5MBまで投稿できます。このツールのJPEGは高画質（品質92%）で書き出します。</li>
-          <li>iPhone・Androidでは共有シートの「画像を保存」から写真アプリに直接保存できます。</li>
-          <li>処理はすべてブラウザの中だけで行われ、画像がサーバーに送信されることはありません。</li>
+          <li data-i18n="note1">複数枚投稿すると、タイムラインでは横に並んで1枚の絵として繋がって見えます。</li>
+          <li data-i18n="note2">JPEGなら1枚5MBまで投稿できます。このツールのJPEGは高画質（品質92%）で書き出します。</li>
+          <li data-i18n="note3">iPhone・Androidでは共有シートの「画像を保存」から写真アプリに直接保存できます。</li>
+          <li data-i18n="note4">処理はすべてブラウザの中だけで行われ、画像がサーバーに送信されることはありません。</li>
         </ul>
       </section>
 
       <section class="share">
-        <p class="share-text">このツール、まわりにも紹介してもらえると嬉しいです</p>
+        <p class="share-text" data-i18n="shareText">このツール、まわりにも紹介してもらえると嬉しいです</p>
         <a class="share-btn"
            href="https://x.com/intent/post?text=画像を横に3・4分割してXに投稿できる無料ツール「ヨコ割をください」&amp;url=https://omiomi79.github.io/yokowari/&amp;via=omiomi79"
            target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          Xでシェア
+          <span data-i18n="shareBtn">Xでシェア</span>
         </a>
       </section>
     </main>
 
     <footer class="footer">
-      <p>ヨコ割をください — <a href="https://github.com/omiomi79/yokowari" id="repo-link">GitHub</a></p>
-      <p class="credit">制作: おみ <a href="https://x.com/omiomi79" target="_blank" rel="noopener">@omiomi79</a></p>
+      <p><span data-i18n="brand">ヨコ割をください</span> — <a href="https://github.com/omiomi79/yokowari" id="repo-link">GitHub</a></p>
+      <p class="credit"><span data-i18n="credit">制作: おみ</span> <a href="https://x.com/omiomi79" target="_blank" rel="noopener">@omiomi79</a></p>
     </footer>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

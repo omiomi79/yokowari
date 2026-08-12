@@ -1,7 +1,10 @@
-// ヨコ割り — 画像を横に3・4分割してダウンロード（全てブラウザ内で処理）
+// ヨコ割をください — 画像を横に3・4分割してダウンロード（全てブラウザ内で処理）
+// 表示文言は i18n.js の辞書から取る
 
 (() => {
   'use strict';
+
+  const t = (key, params) => window.I18N.t(key, params);
 
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('file-input');
@@ -42,7 +45,7 @@
 
   function loadFile(file) {
     if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) {
-      showWarning('PNG・JPEG・WebP の画像を選んでください。');
+      showWarning(t('warnUnsupported'));
       return;
     }
     const url = URL.createObjectURL(file);
@@ -58,7 +61,7 @@
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      showWarning('画像を読み込めませんでした。別のファイルで試してください。');
+      showWarning(t('warnLoadFailed'));
     };
     img.src = url;
   }
@@ -161,17 +164,18 @@
 
     // 共有シート用に書き出しを先読みしておく（エラーはダウンロード時に表示される）
     getAllBlobs().catch(() => {});
-    downloadAllBtn.textContent = supportsShare ? 'まとめて写真に保存' : 'まとめてダウンロード';
-    downloadHintEl.textContent = supportsShare
-      ? '共有シートが開いたら「画像を保存」で写真アプリに入ります。投稿は 1 → 2 → 3 の順で'
-      : '投稿するときは 1 → 2 → 3 の順に画像を選んでください';
+    downloadAllBtn.textContent = t(supportsShare ? 'dlAllShare' : 'dlAll');
+    downloadHintEl.textContent = t(supportsShare ? 'dlHintShare' : 'dlHint');
 
-    srcInfoEl.textContent = `元画像: ${img.naturalWidth} x ${img.naturalHeight}px`;
+    srcInfoEl.textContent = t('srcInfo', {
+      w: img.naturalWidth,
+      h: img.naturalHeight,
+    });
     const widths = [...new Set(pieces.map((p) => p.w))].join(' / ');
-    pieceInfoEl.textContent = `1枚あたり: ${widths} x ${img.naturalHeight}px`;
+    pieceInfoEl.textContent = t('pieceInfo', { widths, h: img.naturalHeight });
 
     if (img.naturalWidth / split < 300) {
-      showWarning('1枚あたりの幅がかなり小さくなります。横長の画像で使うときれいに仕上がります。');
+      showWarning(t('warnNarrow'));
     }
   }
 
@@ -244,9 +248,10 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'piece-dl';
-      btn.textContent = supportsShare
-        ? `${i + 1}枚目だけ保存`
-        : `${i + 1}枚目を保存 (.${ext})`;
+      btn.textContent = t(supportsShare ? 'dlPieceShare' : 'dlPiece', {
+        n: i + 1,
+        ext,
+      });
       btn.addEventListener('click', () => downloadPiece(i));
 
       card.append(thumb, head, btn);
@@ -270,7 +275,7 @@
       ctx.drawImage(img, piece.x, 0, piece.w, img.naturalHeight, 0, 0, piece.w, img.naturalHeight);
       const mime = state.format === 'png' ? 'image/png' : 'image/jpeg';
       canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error('書き出しに失敗しました'))),
+        (blob) => (blob ? resolve(blob) : reject(new Error(t('warnExportFailed')))),
         mime,
         JPEG_QUALITY
       );
@@ -315,7 +320,7 @@
 
   async function shareFiles(files) {
     try {
-      await navigator.share({ files, title: 'ヨコ割をください' });
+      await navigator.share({ files, title: t('brand') });
       return true;
     } catch (err) {
       if (err && err.name === 'AbortError') return true; // ユーザーが共有をキャンセルしただけ
@@ -339,7 +344,7 @@
 
   downloadAllBtn.addEventListener('click', async () => {
     downloadAllBtn.disabled = true;
-    downloadAllBtn.textContent = '書き出し中…';
+    downloadAllBtn.textContent = t('dlExporting');
     try {
       const blobs = await getAllBlobs();
       blobs.forEach(checkSize);
@@ -356,17 +361,20 @@
       showWarning(String(err.message || err));
     } finally {
       downloadAllBtn.disabled = false;
-      downloadAllBtn.textContent = supportsShare ? 'まとめて写真に保存' : 'まとめてダウンロード';
+      downloadAllBtn.textContent = t(supportsShare ? 'dlAllShare' : 'dlAll');
     }
   });
 
   function checkSize(blob) {
     if (blob.size > 5 * 1024 * 1024) {
-      showWarning(
-        `ファイルが ${(blob.size / 1024 / 1024).toFixed(1)}MB あります。Xに投稿できるのは1枚5MBまでなので、JPEG形式を選ぶとサイズを抑えられます。`
-      );
+      showWarning(t('warnTooBig', { size: (blob.size / 1024 / 1024).toFixed(1) }));
     }
   }
+
+  // 言語を切り替えたら、画像を読み込み済みなら動的な表示も作り直す
+  window.I18N.onChange(() => {
+    if (state.img) render();
+  });
 
   // ---------- 警告表示 ----------
 

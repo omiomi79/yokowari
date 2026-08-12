@@ -38,6 +38,50 @@ body {
 
 .header { margin-bottom: 36px; }
 
+.header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.lang {
+  display: inline-flex;
+  border: 1px solid var(--mat-edge);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-raise);
+}
+
+.lang-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+
+.lang-btn + .lang-btn { border-left: 1px solid var(--mat-edge); }
+
+.lang-btn:hover { color: var(--ink); }
+
+.lang-btn.is-active {
+  background: var(--guide);
+  color: #1c1a10;
+  font-weight: 700;
+}
+
+.lang-btn:focus-visible {
+  outline: 2px solid var(--guide);
+  outline-offset: -2px;
+}
+
 .brand {
   display: flex;
   align-items: center;
