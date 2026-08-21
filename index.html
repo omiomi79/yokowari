@@ -88,14 +88,19 @@
               <button type="button" class="seg-btn" data-format="png" role="radio" aria-checked="false">PNG <small data-i18n="pngNote">高画質</small></button>
             </div>
           </div>
+          <button type="button" id="even-btn" class="ghost-btn" data-i18n="evenBtn" hidden>均等に戻す</button>
           <button type="button" id="reset-btn" class="text-btn" data-i18n="reset">別の画像にする</button>
         </div>
 
         <div class="mat">
           <div class="preview-wrap">
-            <canvas id="preview-canvas"></canvas>
+            <div class="stage" id="stage">
+              <canvas id="preview-canvas"></canvas>
+            </div>
           </div>
         </div>
+
+        <p class="drag-hint" id="drag-hint" data-i18n="dragHint">プレビューの黄色いハンドルをドラッグすると分割位置を変えられます</p>
 
         <div class="meta-row">
           <p id="src-info" class="meta mono"></p>

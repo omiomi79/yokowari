@@ -17,18 +17,27 @@
   const downloadAllBtn = document.getElementById('download-all');
   const downloadHintEl = document.getElementById('download-hint');
   const resetBtn = document.getElementById('reset-btn');
+  const evenBtn = document.getElementById('even-btn');
+  const stage = document.getElementById('stage');
 
   const state = {
     img: null,        // HTMLImageElement
     imgId: 0,         // 読み込みごとに増やしてブロブキャッシュを無効化する
     baseName: 'image',
     split: 3,
+    cuts: [],         // 分割位置。元画像に対する割合(0〜1)を左から順に持つ
     format: 'jpeg',   // 'jpeg' | 'png'
   };
 
   const PREVIEW_MAX_W = 1600;
   const THUMB_MAX_W = 480;
   const JPEG_QUALITY = 0.92;
+  const MIN_PIECE_W = 120;   // 隣のコマをこれ以上は潰せない（元画像のpx）
+  const SNAP_DIST = 12;      // 均等位置にこのpx以内まで近づいたら吸着する
+
+  let dragging = null;
+  let rafId = null;
+  let blobTimer = null;
 
   // スマホでは共有シート経由で「画像を保存」→ 写真アプリに保存できるようにする。
   // PCの共有シートはかえって邪魔なので、モバイル端末に限って使う
@@ -55,6 +64,7 @@
       state.img = img;
       state.imgId++;
       state.baseName = (file.name || 'image').replace(/\.[^.]+$/, '') || 'image';
+      evenCuts();
       dropzone.hidden = true;
       workspace.hidden = false;
       render();
@@ -127,43 +137,77 @@
 
   bindSegmented('split', (v) => {
     state.split = Number(v);
+    evenCuts();   // ハンドルの本数が変わるため位置を作り直す
     render();
   });
+
   bindSegmented('format', (v) => {
     state.format = v;
     render();
   });
 
+  evenBtn.addEventListener('click', () => {
+    evenCuts();
+    render();
+  });
+
   // ---------- 分割の計算 ----------
 
-  // 幅を n 等分。割り切れない余りは左のピースから 1px ずつ配る
-  function computePieces(width, n) {
-    const base = Math.floor(width / n);
-    const remainder = width - base * n;
-    const pieces = [];
-    let x = 0;
-    for (let i = 0; i < n; i++) {
-      const w = base + (i < remainder ? 1 : 0);
-      pieces.push({ x, w });
-      x += w;
-    }
-    return pieces;
+  function evenCuts() {
+    state.cuts = Array.from(
+      { length: state.split - 1 },
+      (_, i) => (i + 1) / state.split
+    );
+  }
+
+  function isEven() {
+    return state.cuts.every(
+      (c, i) => Math.abs(c - (i + 1) / state.split) < 1e-9
+    );
+  }
+
+  // 境界を丸めてから幅を出すので、各コマの合計は必ず元画像の幅と一致する
+  function computePieces() {
+    const width = state.img.naturalWidth;
+    const edges = [0, ...state.cuts, 1].map((f) => Math.round(f * width));
+    return edges.slice(0, -1).map((x, i) => ({ x, w: edges[i + 1] - x }));
+  }
+
+  // 隣のハンドルと最小幅の内側に収めたうえで、均等位置には軽く吸着させる
+  function moveCut(i, srcX) {
+    const W = state.img.naturalWidth;
+    const lo = (i === 0 ? 0 : state.cuts[i - 1] * W) + MIN_PIECE_W;
+    const hi = (i === state.cuts.length - 1 ? W : state.cuts[i + 1] * W) - MIN_PIECE_W;
+    if (lo > hi) return;   // 元画像が狭すぎて動かす余地がない
+    let x = Math.max(lo, Math.min(hi, srcX));
+    const target = ((i + 1) / state.split) * W;
+    if (Math.abs(x - target) < SNAP_DIST) x = target;
+    state.cuts[i] = x / W;
+    scheduleRender();
+  }
+
+  // ドラッグ中は毎フレーム1回だけ描き直す
+  function scheduleRender() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      render();
+    });
   }
 
   // ---------- 描画 ----------
 
   function render() {
-    const { img, split } = state;
+    const { img } = state;
     if (!img) return;
     hideWarning();
 
-    const pieces = computePieces(img.naturalWidth, split);
+    const pieces = computePieces();
 
     renderPreview(img, pieces);
+    renderHandles(img);
     renderPieceCards(img, pieces);
 
-    // 共有シート用に書き出しを先読みしておく（エラーはダウンロード時に表示される）
-    getAllBlobs().catch(() => {});
     downloadAllBtn.textContent = t(supportsShare ? 'dlAllShare' : 'dlAll');
     downloadHintEl.textContent = t(supportsShare ? 'dlHintShare' : 'dlHint');
 
@@ -174,9 +218,83 @@
     const widths = [...new Set(pieces.map((p) => p.w))].join(' / ');
     pieceInfoEl.textContent = t('pieceInfo', { widths, h: img.naturalHeight });
 
-    if (img.naturalWidth / split < 300) {
+    const even = isEven();
+    evenBtn.hidden = even;
+
+    // 幅が揃っていないとXでは横に並ばないので、その注意を最優先で出す
+    if (!even) {
+      showWarning(t('warnUneven'));
+    } else if (Math.min(...pieces.map((p) => p.w)) < 300) {
       showWarning(t('warnNarrow'));
     }
+
+    // 書き出し(JPEG圧縮)は重いので、操作が止まってからまとめて走らせる
+    clearTimeout(blobTimer);
+    blobTimer = setTimeout(() => getAllBlobs().catch(() => {}), 300);
+  }
+
+  // ハンドルはCanvasではなくDOMで重ねる。掴む範囲を広く取れて、キーボードでも動かせる。
+  // 描き直すたびに作り直すとドラッグ中に掴んでいる要素が消えるので、位置だけ更新する
+  function renderHandles(img) {
+    const W = img.naturalWidth;
+    let handles = [...stage.querySelectorAll('.handle')];
+
+    if (handles.length !== state.cuts.length) {
+      handles.forEach((el) => el.remove());
+      handles = state.cuts.map((_, i) => createHandle(i));
+      handles.forEach((el) => stage.appendChild(el));
+    }
+
+    handles.forEach((el, i) => {
+      el.style.left = state.cuts[i] * 100 + '%';
+      el.setAttribute('aria-label', t('handleAria', { n: i + 1 }));
+      el.setAttribute('aria-valuemax', String(W));
+      el.setAttribute('aria-valuenow', String(Math.round(state.cuts[i] * W)));
+    });
+  }
+
+  function createHandle(i) {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'handle';
+    el.setAttribute('role', 'slider');
+    el.setAttribute('aria-valuemin', '0');
+    el.innerHTML = '<span class="line"></span><span class="grip"><i></i><i></i></span>';
+
+    const toSrcX = (clientX) => {
+      const r = previewCanvas.getBoundingClientRect();
+      return ((clientX - r.left) / r.width) * state.img.naturalWidth;
+    };
+
+    el.addEventListener('pointerdown', (e) => {
+      dragging = i;
+      try {
+        // 指がハンドルから外れても追従させる。掴めない状況でも drag 自体は続行する
+        el.setPointerCapture(e.pointerId);
+      } catch (err) {
+        /* 対象のポインタが既に離れている場合は捕捉不要 */
+      }
+      e.preventDefault();
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (dragging !== i) return;
+      moveCut(i, toSrcX(e.clientX));
+    });
+    el.addEventListener('pointerup', () => {
+      dragging = null;
+    });
+    el.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? 10 : 1;
+      const at = state.cuts[i] * state.img.naturalWidth;
+      if (e.key === 'ArrowLeft') {
+        moveCut(i, at - step);
+        e.preventDefault();
+      } else if (e.key === 'ArrowRight') {
+        moveCut(i, at + step);
+        e.preventDefault();
+      }
+    });
+    return el;
   }
 
   function renderPreview(img, pieces) {
@@ -189,21 +307,8 @@
     const ctx = previewCanvas.getContext('2d');
     ctx.drawImage(img, 0, 0, w, h);
 
-    // カットガイド（黄色の破線）と番号
+    // 分割線はハンドル側が実線で描くので、ここでは通し番号だけ載せる
     const guide = '#e8c547';
-    ctx.save();
-    ctx.strokeStyle = guide;
-    ctx.lineWidth = Math.max(2, w / 500);
-    ctx.setLineDash([12, 8]);
-    for (let i = 1; i < pieces.length; i++) {
-      const x = Math.round(pieces[i].x * scale) + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
-    }
-    ctx.restore();
-
     const fontSize = Math.max(16, Math.round(w / 30));
     ctx.font = `700 ${fontSize}px Consolas, monospace`;
     ctx.textBaseline = 'top';
@@ -301,9 +406,9 @@
   let blobCache = { key: null, promise: null };
 
   function getAllBlobs() {
-    const key = `${state.imgId}:${state.split}:${state.format}`;
+    const key = `${state.imgId}:${state.format}:${state.cuts.join(',')}`;
     if (blobCache.key !== key) {
-      const pieces = computePieces(state.img.naturalWidth, state.split);
+      const pieces = computePieces();
       blobCache = {
         key,
         promise: Promise.all(pieces.map((p) => pieceBlob(state.img, p))),
@@ -370,6 +475,14 @@
       showWarning(t('warnTooBig', { size: (blob.size / 1024 / 1024).toFixed(1) }));
     }
   }
+
+  // ハンドルの外で指やマウスを離したときもドラッグ状態を必ず解除する
+  window.addEventListener('pointerup', () => {
+    dragging = null;
+  });
+  window.addEventListener('pointercancel', () => {
+    dragging = null;
+  });
 
   // 言語を切り替えたら、画像を読み込み済みなら動的な表示も作り直す
   window.I18N.onChange(() => {

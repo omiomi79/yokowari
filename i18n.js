@@ -22,6 +22,10 @@
       jpegNote: 'X推奨',
       pngNote: '高画質',
       reset: '別の画像にする',
+      evenBtn: '均等に戻す',
+      dragHint: 'プレビューの黄色いハンドルをドラッグすると分割位置を変えられます（← → キーでも調整できます）',
+      handleAria: '分割位置 {n}',
+      warnUneven: '分割幅が均等ではありません。Xの複数枚投稿は各コマが同じ幅で表示されるため、このままでは横に繋がって見えません。',
 
       srcInfo: '元画像: {w} x {h}px',
       pieceInfo: '1枚あたり: {widths} x {h}px',
@@ -70,6 +74,10 @@
       jpegNote: 'Best for X',
       pngNote: 'Highest quality',
       reset: 'Use a different image',
+      evenBtn: 'Reset to equal',
+      dragHint: 'Drag the yellow handles on the preview to move the split positions (arrow keys work too).',
+      handleAria: 'Split position {n}',
+      warnUneven: 'The pieces are no longer equal in width. X shows every image in a multi-image post at the same width, so these will not line up into one wide image.',
 
       srcInfo: 'Original: {w} x {h}px',
       pieceInfo: 'Each piece: {widths} x {h}px',
@@ -118,6 +126,10 @@
       jpegNote: 'X 권장',
       pngNote: '고화질',
       reset: '다른 이미지 선택',
+      evenBtn: '균등하게 되돌리기',
+      dragHint: '미리보기의 노란색 핸들을 드래그하면 분할 위치를 바꿀 수 있습니다 (화살표 키로도 조정 가능).',
+      handleAria: '분할 위치 {n}',
+      warnUneven: '분할 폭이 균등하지 않습니다. X의 여러 장 게시물은 각 이미지가 같은 폭으로 표시되므로 이대로는 가로로 이어져 보이지 않습니다.',
 
       srcInfo: '원본: {w} x {h}px',
       pieceInfo: '한 장당: {widths} x {h}px',

@@ -267,12 +267,91 @@ body {
   justify-content: center;
 }
 
+/* ハンドルを重ねるため、canvas と同じ大きさに縮む器 */
+.stage {
+  position: relative;
+  line-height: 0;
+  max-width: 100%;
+  touch-action: none;
+}
+
 #preview-canvas {
   max-width: 100%;
   height: auto;
   display: block;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 }
+
+/* 分割位置のハンドル。細い線を見せつつ、掴む範囲は指でも届く幅を確保する */
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 34px;
+  margin-left: -17px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.handle .line {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--guide);
+}
+
+.handle .grip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 44px;
+  border-radius: 5px;
+  background: var(--guide);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.handle .grip i {
+  width: 2px;
+  height: 16px;
+  background: #1c1a10;
+  border-radius: 1px;
+}
+
+.handle:focus-visible .grip {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.drag-hint {
+  margin-top: 10px;
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+}
+
+.ghost-btn {
+  appearance: none;
+  border: 1px solid var(--mat-edge);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.ghost-btn:hover { border-color: var(--guide); color: var(--guide); }
+.ghost-btn:focus-visible { outline: 2px solid var(--guide); outline-offset: 2px; }
 
 /* ---------- メタ情報 ---------- */
 
