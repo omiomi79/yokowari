@@ -44,6 +44,8 @@ npx serve .
 
 おみ（[@omiomi79](https://x.com/omiomi79)）
 
+フッターの作者ブロックは X のフォローIntent（`x.com/intent/follow`）に直結しています。
+
 ## ライセンス
 
 MIT

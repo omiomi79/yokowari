@@ -54,7 +54,10 @@
       shareBtn: 'Xでシェア',
       shareTweet: '画像を横に3・4分割してXに投稿できる無料ツール「ヨコ割をください」',
 
-      credit: '制作: おみ',
+      authorEyebrow: '制作者',
+      authorName: 'おみ',
+      authorMade: 'このツールを作成しました',
+      authorFollow: 'Xでフォロー',
     },
 
     en: {
@@ -106,7 +109,10 @@
       shareBtn: 'Share on X',
       shareTweet: 'Yokowari — a free tool that splits an image into 3 or 4 pieces for posting on X',
 
-      credit: 'Made by Omi',
+      authorEyebrow: 'Created by',
+      authorName: 'Omi',
+      authorMade: 'I made this tool',
+      authorFollow: 'Follow on X',
     },
 
     ko: {
@@ -158,7 +164,10 @@
       shareBtn: 'X에 공유',
       shareTweet: "이미지를 가로로 3·4등분해 X에 올릴 수 있는 무료 도구 '요코와리'",
 
-      credit: '제작: 오미',
+      authorEyebrow: '제작자',
+      authorName: '오미',
+      authorMade: '이 도구를 만들었습니다',
+      authorFollow: 'X에서 팔로우',
     },
   };
 

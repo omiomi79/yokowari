@@ -139,8 +139,25 @@
     </main>
 
     <footer class="footer">
-      <p><span data-i18n="brand">ヨコ割をください</span> — <a href="https://github.com/omiomi79/yokowari" id="repo-link">GitHub</a></p>
-      <p class="credit"><span data-i18n="credit">制作: おみ</span> <a href="https://x.com/omiomi79" target="_blank" rel="noopener">@omiomi79</a></p>
+      <!-- 作者ブロック。カード全体がXのフォロー画面へのリンクになっている -->
+      <a class="author" href="https://x.com/intent/follow?screen_name=omiomi79"
+         target="_blank" rel="noopener">
+        <span class="author-avatar" aria-hidden="true" data-i18n="authorName">おみ</span>
+        <span class="author-text">
+          <span class="author-eyebrow" data-i18n="authorEyebrow">制作者</span>
+          <span class="author-line">
+            <span class="author-name" data-i18n="authorName">おみ</span>
+            <span class="author-handle">@omiomi79</span>
+          </span>
+          <span class="author-made" data-i18n="authorMade">このツールを作成しました</span>
+        </span>
+        <span class="author-follow">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span data-i18n="authorFollow">Xでフォロー</span>
+        </span>
+      </a>
+
+      <p class="footer-meta"><span data-i18n="brand">ヨコ割をください</span> — <a href="https://github.com/omiomi79/yokowari" id="repo-link">GitHub</a></p>
     </footer>
   </div>
 
