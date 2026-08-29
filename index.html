@@ -139,10 +139,16 @@
     </main>
 
     <footer class="footer">
-      <!-- 作者ブロック。カード全体がXのフォロー画面へのリンクになっている -->
+      <!-- 作者ブロック。カード全体がXのフォロー画面へのリンクになっている。
+           背景の色面にガラス板を重ねる構成なので、.author-stage と対で使う -->
+      <div class="author-stage">
       <a class="author" href="https://x.com/intent/follow?screen_name=omiomi79"
          target="_blank" rel="noopener">
-        <span class="author-avatar" aria-hidden="true" data-i18n="authorName">おみ</span>
+        <span class="author-avatar" aria-hidden="true">
+          <!-- アイコン画像を置くときは、このすぐ下に
+               <img class="author-avatar-img" src="avatar.png" alt="" /> を足す -->
+          <span class="author-avatar-text" data-i18n="authorName">おみ</span>
+        </span>
         <span class="author-text">
           <span class="author-eyebrow" data-i18n="authorEyebrow">制作者</span>
           <span class="author-line">
@@ -156,6 +162,7 @@
           <span data-i18n="authorFollow">Xでフォロー</span>
         </span>
       </a>
+      </div>
 
       <p class="footer-meta"><span data-i18n="brand">ヨコ割をください</span> — <a href="https://github.com/omiomi79/yokowari" id="repo-link">GitHub</a></p>
     </footer>
