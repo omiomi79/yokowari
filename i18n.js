@@ -1,5 +1,8 @@
 // 表示文言の辞書と言語切り替え。app.js より先に読み込むこと。
 // 動的に組み立てる文言は {n} のような差し込み口を持つ（I18N.t の第2引数で埋める）
+//
+// ヨコ割（/）とタテ割（/tate/）は同じ辞書を共有し、ページ固有の文言だけを
+// PAGE_OVERRIDES で上書きする。どちらのページかは <html data-app> で判定する
 
 (() => {
   'use strict';
@@ -15,6 +18,9 @@
       dropTitle: '画像をここにドロップ',
       dropSub: 'クリックで選択 ／ Ctrl+V で貼り付けもOK',
 
+      switchAria: 'ツールの切り替え',
+      switchYoko: 'ヨコ割',
+      switchTate: 'タテ割',
       splitLabel: '分割数',
       split3: '3分割',
       split4: '4分割',
@@ -23,12 +29,13 @@
       pngNote: '高画質',
       reset: '別の画像にする',
       evenBtn: '均等に戻す',
-      dragHint: 'プレビューの黄色いハンドルをドラッグすると分割位置を変えられます（← → キーでも調整できます）',
+      dragHint: 'プレビューの黄色いハンドルをドラッグすると分割位置を変えられます（矢印キーでも調整できます）',
       handleAria: '分割位置 {n}',
       warnUneven: '分割幅が均等ではありません。Xの複数枚投稿は各コマが同じ幅で表示されるため、このままでは横に繋がって見えません。',
 
       srcInfo: '元画像: {w} x {h}px',
       pieceInfo: '1枚あたり: {widths} x {h}px',
+      pieceInfoV: '1枚あたり: {w} x {heights}px',
 
       dlAll: 'まとめてダウンロード',
       dlAllShare: 'まとめて写真に保存',
@@ -41,6 +48,7 @@
       warnUnsupported: 'PNG・JPEG・WebP の画像を選んでください。',
       warnLoadFailed: '画像を読み込めませんでした。別のファイルで試してください。',
       warnNarrow: '1枚あたりの幅がかなり小さくなります。横長の画像で使うときれいに仕上がります。',
+      warnShort: '1枚あたりの高さがかなり小さくなります。縦長の画像で使うときれいに仕上がります。',
       warnTooBig: 'ファイルが {size}MB あります。Xに投稿できるのは1枚5MBまでなので、JPEG形式を選ぶとサイズを抑えられます。',
       warnExportFailed: '書き出しに失敗しました',
 
@@ -70,6 +78,9 @@
       dropTitle: 'Drop an image here',
       dropSub: 'Or click to choose — Ctrl+V works too',
 
+      switchAria: 'Switch tool',
+      switchYoko: 'Yokowari',
+      switchTate: 'Tatewari',
       splitLabel: 'Pieces',
       split3: '3 pieces',
       split4: '4 pieces',
@@ -84,6 +95,7 @@
 
       srcInfo: 'Original: {w} x {h}px',
       pieceInfo: 'Each piece: {widths} x {h}px',
+      pieceInfoV: 'Each piece: {w} x {heights}px',
 
       dlAll: 'Download all',
       dlAllShare: 'Save all to Photos',
@@ -96,6 +108,7 @@
       warnUnsupported: 'Choose a PNG, JPEG, or WebP image.',
       warnLoadFailed: "That image couldn't be loaded. Try a different file.",
       warnNarrow: 'Each piece will be quite narrow. Wide images give the best results.',
+      warnShort: 'Each piece will be quite short. Tall images give the best results.',
       warnTooBig: 'This file is {size}MB. X accepts up to 5MB per image — switch to JPEG to bring the size down.',
       warnExportFailed: 'Export failed',
 
@@ -125,6 +138,9 @@
       dropTitle: '여기에 이미지를 놓으세요',
       dropSub: '클릭해서 선택하거나 Ctrl+V로 붙여넣기',
 
+      switchAria: '도구 전환',
+      switchYoko: '요코와리',
+      switchTate: '타테와리',
       splitLabel: '분할 수',
       split3: '3등분',
       split4: '4등분',
@@ -139,6 +155,7 @@
 
       srcInfo: '원본: {w} x {h}px',
       pieceInfo: '한 장당: {widths} x {h}px',
+      pieceInfoV: '한 장당: {w} x {heights}px',
 
       dlAll: '한꺼번에 다운로드',
       dlAllShare: '사진에 한꺼번에 저장',
@@ -151,6 +168,7 @@
       warnUnsupported: 'PNG · JPEG · WebP 이미지를 선택해 주세요.',
       warnLoadFailed: '이미지를 불러오지 못했습니다. 다른 파일로 시도해 주세요.',
       warnNarrow: '한 장당 너비가 상당히 작아집니다. 가로로 긴 이미지에서 더 깔끔하게 나옵니다.',
+      warnShort: '한 장당 높이가 상당히 작아집니다. 세로로 긴 이미지에서 더 깔끔하게 나옵니다.',
       warnTooBig: '파일이 {size}MB입니다. X는 한 장당 5MB까지만 올릴 수 있으니 JPEG를 선택하면 용량을 줄일 수 있습니다.',
       warnExportFailed: '내보내기에 실패했습니다',
 
@@ -171,8 +189,48 @@
     },
   };
 
-  const STORAGE_KEY = 'yokowari-lang';
-  const SITE_URL = 'https://omiomi79.github.io/yokowari/';
+  // タテ割ページで差し替える文言。ここにないキーは共通辞書のものがそのまま使われる
+  const PAGE_OVERRIDES = {
+    tate: {
+      ja: {
+        brand: 'タテ割もください',
+        docTitle: 'タテ割もください — 画像を上下2分割してXに投稿',
+        docDesc: '画像を上下に2分割してダウンロードできる無料ツール。X（Twitter）投稿用。ブラウザ内で処理するので画像はどこにも送信されません。',
+        tagline: '縦長の画像を上下2枚に分けて、X（Twitter）にそのまま投稿できる形でダウンロード。',
+        evenBtn: '中央に戻す',
+        dlHint: '先に 2（下）を投稿し、その投稿を引用リポストして 1（上）を貼ってください',
+        dlHintShare: '共有シートが開いたら「画像を保存」で写真アプリに入ります。先に 2（下）を投稿し、引用リポストで 1（上）を',
+        note1: '先に下半分（2）を投稿し、それを引用リポストして上半分（1）を貼ると、タイムラインで上下に繋がって見えます。',
+        shareTweet: '画像を上下2分割してXに投稿できる無料ツール「タテ割もください」',
+      },
+      en: {
+        brand: 'Tatewari',
+        docTitle: 'Tatewari — Split an image into top and bottom halves for X',
+        docDesc: 'A free tool that splits an image into top and bottom halves for posting on X (Twitter). Everything runs in your browser — your images are never uploaded.',
+        tagline: 'Split a tall image into a top and bottom half, ready to post on X (Twitter).',
+        evenBtn: 'Reset to center',
+        dlHint: 'Post 2 (bottom) first, then quote-repost it with 1 (top) attached',
+        dlHintShare: 'Choose "Save Image" in the share sheet to add them to Photos. Post 2 (bottom) first, then quote-repost it with 1 (top)',
+        note1: 'Post the bottom half (2) first, then quote-repost that post with the top half (1) attached. They stack into one tall image in the timeline.',
+        shareTweet: 'Tatewari — a free tool that splits an image into top and bottom halves for posting on X',
+      },
+      ko: {
+        brand: '타테와리',
+        docTitle: '타테와리 — 이미지를 위아래 2등분해 X에 올리기',
+        docDesc: '이미지를 위아래로 2등분해 다운로드할 수 있는 무료 도구입니다. X(트위터) 게시용. 브라우저 안에서 처리되어 이미지가 어디로도 전송되지 않습니다.',
+        tagline: '세로로 긴 이미지를 위아래 2장으로 나눠 X(트위터)에 바로 올릴 수 있는 형태로 다운로드합니다.',
+        evenBtn: '가운데로 되돌리기',
+        dlHint: '먼저 2(아래)를 올린 뒤, 그 게시물을 인용 리포스트하며 1(위)을 첨부하세요',
+        dlHintShare: '공유 시트에서 "이미지 저장"을 선택하면 사진 앱에 저장됩니다. 먼저 2(아래)를 올리고 인용 리포스트로 1(위)을',
+        note1: '먼저 아래쪽 절반(2)을 올린 뒤, 그 게시물을 인용 리포스트하며 위쪽 절반(1)을 첨부하면 타임라인에서 위아래로 이어져 보입니다.',
+        shareTweet: "이미지를 위아래로 2등분해 X에 올릴 수 있는 무료 도구 '타테와리'",
+      },
+    },
+  };
+
+  const PAGE = document.documentElement.dataset.app === 'tate' ? 'tate' : 'yoko';
+  const STORAGE_KEY = 'yokowari-lang';   // 言語の選択は両ページで共有する
+  const SITE_URL = 'https://omiomi79.github.io/yokowari/' + (PAGE === 'tate' ? 'tate/' : '');
   const listeners = [];
 
   // 保存済みの選択 → ブラウザの言語設定 → 英語、の順で決める
@@ -193,7 +251,8 @@
   let lang = detectLang();
 
   function t(key, params) {
-    let text = (DICT[lang] && DICT[lang][key]) || DICT.ja[key] || key;
+    const over = (PAGE_OVERRIDES[PAGE] || {})[lang] || {};
+    let text = over[key] || (DICT[lang] && DICT[lang][key]) || DICT.ja[key] || key;
     if (params) {
       text = text.replace(/\{(\w+)\}/g, (m, name) =>
         name in params ? params[name] : m

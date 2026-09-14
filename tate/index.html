@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja" data-app="tate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>タテ割もください — 画像を上下2分割してXに投稿</title>
+  <meta name="description" content="画像を上下に2分割してダウンロードできる無料ツール。X（Twitter）投稿用。ブラウザ内で処理するので画像はどこにも送信されません。" />
+
+  <!-- SNSでリンクを貼ったときのカード表示 -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="タテ割もください" />
+  <meta property="og:title" content="タテ割もください" />
+  <meta property="og:description" content="画像を上下に2分割してX（Twitter）に投稿できる無料ツール。処理はブラウザ内で完結し、画像はどこにも送信されません。" />
+  <meta property="og:url" content="https://omiomi79.github.io/yokowari/tate/" />
+  <meta property="og:image" content="https://omiomi79.github.io/yokowari/ogp-tate.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@omiomi79" />
+  <meta name="twitter:creator" content="@omiomi79" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><defs><clipPath id='p'><rect x='12' y='20' width='96' height='36' rx='2'/><rect x='12' y='64' width='96' height='36' rx='2'/></clipPath></defs><g clip-path='url(%23p)'><rect width='120' height='120' fill='%23E8C547'/><circle cx='60' cy='38' r='7' fill='%23131513'/><path d='M8 92 V80 L30 60 L46 76 L63 50 L88 76 L98 66 L112 80 V92 Z' fill='%23131513'/></g></svg>" />
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-top">
+        <h1 class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
+              <defs>
+                <clipPath id="logo-panels">
+                  <rect x="12" y="20" width="96" height="36" rx="2" />
+                  <rect x="12" y="64" width="96" height="36" rx="2" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#logo-panels)">
+                <rect x="0" y="0" width="120" height="120" fill="#e8c547" />
+                <circle cx="60" cy="38" r="7" fill="#131513" />
+                <path d="M8 92 V80 L30 60 L46 76 L63 50 L88 76 L98 66 L112 80 V92 Z" fill="#131513" />
+              </g>
+            </svg>
+          </span>
+          <span data-i18n="brand">タテ割もください</span>
+        </h1>
+
+        <div class="header-tools">
+          <!-- ヨコ割とタテ割は別ページ。今いる方は span、もう片方はリンク -->
+          <nav class="page-switch" data-i18n-aria="switchAria" aria-label="ツールの切り替え">
+            <a class="page-switch-item" href="../" data-i18n="switchYoko">ヨコ割</a>
+            <span class="page-switch-item is-active" aria-current="page" data-i18n="switchTate">タテ割</span>
+          </nav>
+          <div class="lang" role="group" aria-label="Language / 言語">
+            <button type="button" class="lang-btn" data-lang="ja" lang="ja" aria-pressed="true">日本語</button>
+            <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false">English</button>
+            <button type="button" class="lang-btn" data-lang="ko" lang="ko" aria-pressed="false">한국어</button>
+          </div>
+        </div>
+      </div>
+      <p class="tagline" data-i18n="tagline">縦長の画像を上下2枚に分けて、X（Twitter）にそのまま投稿できる形でダウンロード。</p>
+    </header>
+
+    <main>
+      <!-- ドロップゾーン -->
+      <section id="dropzone" class="dropzone" tabindex="0" role="button"
+               data-i18n-aria="dropAria" aria-label="画像を選択またはドラッグ＆ドロップ">
+        <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" hidden />
+        <div class="dropzone-inner">
+          <svg class="dropzone-icon" viewBox="0 0 48 48" aria-hidden="true">
+            <rect x="10" y="6" width="28" height="16" rx="1.5" />
+            <rect x="10" y="26" width="28" height="16" rx="1.5" opacity=".65" />
+          </svg>
+          <p class="dropzone-title" data-i18n="dropTitle">画像をここにドロップ</p>
+          <p class="dropzone-sub" data-i18n="dropSub">クリックで選択 ／ Ctrl+V で貼り付けもOK</p>
+          <p class="dropzone-formats">PNG・JPEG・WebP</p>
+        </div>
+      </section>
+
+      <!-- 作業エリア（画像読み込み後に表示） -->
+      <section id="workspace" class="workspace" hidden>
+        <div class="controls">
+          <div class="control-group">
+            <span class="control-label" data-i18n="formatLabel">保存形式</span>
+            <div class="segmented" role="radiogroup" data-i18n-aria="formatLabel" aria-label="保存形式">
+              <button type="button" class="seg-btn is-active" data-format="jpeg" role="radio" aria-checked="true">JPEG <small data-i18n="jpegNote">X推奨</small></button>
+              <button type="button" class="seg-btn" data-format="png" role="radio" aria-checked="false">PNG <small data-i18n="pngNote">高画質</small></button>
+            </div>
+          </div>
+          <button type="button" id="even-btn" class="ghost-btn" data-i18n="evenBtn" hidden>中央に戻す</button>
+          <button type="button" id="reset-btn" class="text-btn" data-i18n="reset">別の画像にする</button>
+        </div>
+
+        <div class="mat">
+          <div class="preview-wrap">
+            <div class="stage" id="stage">
+              <canvas id="preview-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <p class="drag-hint" id="drag-hint" data-i18n="dragHint">プレビューの黄色いハンドルをドラッグすると分割位置を変えられます</p>
+
+        <div class="meta-row">
+          <p id="src-info" class="meta mono"></p>
+          <p id="piece-info" class="meta mono"></p>
+        </div>
+        <p id="warning" class="warning" hidden></p>
+
+        <div class="pieces" id="pieces"></div>
+
+        <div class="download-row">
+          <button type="button" id="download-all" class="primary-btn">まとめてダウンロード</button>
+          <p class="download-hint" id="download-hint">先に 2（下）を投稿し、その投稿を引用リポストして 1（上）を貼ってください</p>
+        </div>
+      </section>
+
+      <!-- 使い方メモ -->
+      <section class="notes">
+        <h2 class="notes-title" data-i18n="notesTitle">Xに投稿するときのメモ</h2>
+        <ul>
+          <li data-i18n="note1">先に下半分（2）を投稿し、それを引用リポストして上半分（1）を貼ると、タイムラインで上下に繋がって見えます。</li>
+          <li data-i18n="note2">JPEGなら1枚5MBまで投稿できます。このツールのJPEGは高画質（品質92%）で書き出します。</li>
+          <li data-i18n="note3">iPhone・Androidでは共有シートの「画像を保存」から写真アプリに直接保存できます。</li>
+          <li data-i18n="note4">処理はすべてブラウザの中だけで行われ、画像がサーバーに送信されることはありません。</li>
+        </ul>
+      </section>
+
+      <section class="share">
+        <p class="share-text" data-i18n="shareText">このツール、まわりにも紹介してもらえると嬉しいです</p>
+        <a class="share-btn"
+           href="https://x.com/intent/post?text=画像を上下2分割してXに投稿できる無料ツール「タテ割もください」&amp;url=https://omiomi79.github.io/yokowari/tate/&amp;via=omiomi79"
+           target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span data-i18n="shareBtn">Xでシェア</span>
+        </a>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <!-- 作者ブロック。カード全体がXのフォロー画面へのリンクになっている。
+           背景の色面にガラス板を重ねる構成なので、.author-stage と対で使う -->
+      <div class="author-stage">
+      <a class="author" href="https://x.com/intent/follow?screen_name=omiomi79"
+         target="_blank" rel="noopener">
+        <span class="author-avatar" aria-hidden="true">
+          <!-- 画像が取得できない場合は名前の文字が下から見える -->
+          <span class="author-avatar-text" data-i18n="authorName">おみ</span>
+          <img class="author-avatar-img" src="../avatar.png" alt="" width="192" height="192" />
+        </span>
+        <span class="author-text">
+          <span class="author-eyebrow" data-i18n="authorEyebrow">制作者</span>
+          <span class="author-line">
+            <span class="author-name" data-i18n="authorName">おみ</span>
+            <span class="author-handle">@omiomi79</span>
+          </span>
+          <span class="author-made" data-i18n="authorMade">このツールを作成しました</span>
+        </span>
+        <span class="author-follow">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span data-i18n="authorFollow">Xでフォロー</span>
+        </span>
+      </a>
+      </div>
+
+      <p class="footer-meta"><span data-i18n="brand">タテ割もください</span> — <a href="https://github.com/omiomi79/yokowari" id="repo-link">GitHub</a></p>
+    </footer>
+  </div>
+
+  <script src="../i18n.js"></script>
+  <script src="../app.js"></script>
+</body>
+</html>

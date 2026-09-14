@@ -46,6 +46,46 @@ body {
   gap: 12px 20px;
 }
 
+.header-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+/* ヨコ割 / タテ割 のページ切り替え。言語ボタンと同じ作法で、今いる側を黄色で示す */
+.page-switch {
+  display: inline-flex;
+  border: 1px solid var(--mat-edge);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-raise);
+}
+
+.page-switch-item {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+
+.page-switch-item + .page-switch-item { border-left: 1px solid var(--mat-edge); }
+
+a.page-switch-item:hover { color: var(--ink); }
+
+.page-switch-item.is-active {
+  background: var(--guide);
+  color: #1c1a10;
+}
+
+a.page-switch-item:focus-visible {
+  outline: 2px solid var(--guide);
+  outline-offset: -2px;
+}
+
 .lang {
   display: inline-flex;
   border: 1px solid var(--mat-edge);
@@ -332,6 +372,39 @@ body {
   outline-offset: 2px;
 }
 
+/* 縦分割のときはハンドルを横に寝かせる */
+.handle.is-y {
+  top: auto;
+  bottom: auto;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: 34px;
+  margin-left: 0;
+  margin-top: -17px;
+  cursor: ns-resize;
+}
+
+.handle.is-y .line {
+  left: 0;
+  right: 0;
+  top: 16px;
+  bottom: auto;
+  width: auto;
+  height: 2px;
+}
+
+.handle.is-y .grip {
+  width: 44px;
+  height: 20px;
+  flex-direction: column;
+}
+
+.handle.is-y .grip i {
+  width: 16px;
+  height: 2px;
+}
+
 .drag-hint {
   margin-top: 10px;
   color: var(--ink-dim);
@@ -384,6 +457,11 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
   margin-top: 24px;
+}
+
+/* 縦分割のコマは横長なので、並べずに縦に積んで幅いっぱいに見せる */
+.pieces.is-stacked {
+  grid-template-columns: 1fr;
 }
 
 .piece {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-app="yoko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -45,10 +45,17 @@
           <span data-i18n="brand">ヨコ割をください</span>
         </h1>
 
-        <div class="lang" role="group" aria-label="Language / 言語">
-          <button type="button" class="lang-btn" data-lang="ja" lang="ja" aria-pressed="true">日本語</button>
-          <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false">English</button>
-          <button type="button" class="lang-btn" data-lang="ko" lang="ko" aria-pressed="false">한국어</button>
+        <div class="header-tools">
+          <!-- ヨコ割とタテ割は別ページ。今いる方は span、もう片方はリンク -->
+          <nav class="page-switch" data-i18n-aria="switchAria" aria-label="ツールの切り替え">
+            <span class="page-switch-item is-active" aria-current="page" data-i18n="switchYoko">ヨコ割</span>
+            <a class="page-switch-item" href="tate/" data-i18n="switchTate">タテ割</a>
+          </nav>
+          <div class="lang" role="group" aria-label="Language / 言語">
+            <button type="button" class="lang-btn" data-lang="ja" lang="ja" aria-pressed="true">日本語</button>
+            <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false">English</button>
+            <button type="button" class="lang-btn" data-lang="ko" lang="ko" aria-pressed="false">한국어</button>
+          </div>
         </div>
       </div>
       <p class="tagline" data-i18n="tagline">画像を横に3・4分割して、X（Twitter）にそのまま投稿できる形でダウンロード。</p>

@@ -1,10 +1,18 @@
-// ヨコ割をください — 画像を横に3・4分割してダウンロード（全てブラウザ内で処理）
-// 表示文言は i18n.js の辞書から取る
+// ヨコ割をください／タテ割もください — 画像を分割してダウンロード（全てブラウザ内で処理）
+// 表示文言は i18n.js の辞書から取る。
+// 2つのページは同じコードで動き、<html data-app> でどちらかを判定する
 
 (() => {
   'use strict';
 
   const t = (key, params) => window.I18N.t(key, params);
+
+  // ページごとの固定設定。タテ割は上下2分割・ハンドル1本に絞る
+  const PAGE = document.documentElement.dataset.app === 'tate' ? 'tate' : 'yoko';
+  const PAGE_CONFIG = {
+    yoko: { axis: 'x', split: 3 },
+    tate: { axis: 'y', split: 2 },
+  }[PAGE];
 
   const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('file-input');
@@ -24,15 +32,17 @@
     img: null,        // HTMLImageElement
     imgId: 0,         // 読み込みごとに増やしてブロブキャッシュを無効化する
     baseName: 'image',
-    split: 3,
-    cuts: [],         // 分割位置。元画像に対する割合(0〜1)を左から順に持つ
+    split: PAGE_CONFIG.split,
+    axis: PAGE_CONFIG.axis,   // 'x' = 横分割（左右に並ぶ） / 'y' = 縦分割（上下に積む）
+    cuts: [],                 // 分割位置。元画像に対する割合(0〜1)を左（縦分割なら上）から順に持つ
     format: 'jpeg',   // 'jpeg' | 'png'
   };
 
   const PREVIEW_MAX_W = 1600;
   const THUMB_MAX_W = 480;
+  const THUMB_MAX_W_STACKED = 960;  // 縦分割のコマは横長で1列に積むので大きめに描く
   const JPEG_QUALITY = 0.92;
-  const MIN_PIECE_W = 120;   // 隣のコマをこれ以上は潰せない（元画像のpx）
+  const MIN_PIECE_LEN = 120; // 隣のコマをこれ以上は潰せない（元画像のpx、分割軸方向）
   const SNAP_DIST = 12;      // 均等位置にこのpx以内まで近づいたら吸着する
 
   let dragging = null;
@@ -135,6 +145,7 @@
     });
   }
 
+  // 分割数の切り替えはヨコ割ページにだけある。タテ割ページではボタンが無いので何も束縛されない
   bindSegmented('split', (v) => {
     state.split = Number(v);
     evenCuts();   // ハンドルの本数が変わるため位置を作り直す
@@ -166,23 +177,38 @@
     );
   }
 
-  // 境界を丸めてから幅を出すので、各コマの合計は必ず元画像の幅と一致する
-  function computePieces() {
-    const width = state.img.naturalWidth;
-    const edges = [0, ...state.cuts, 1].map((f) => Math.round(f * width));
-    return edges.slice(0, -1).map((x, i) => ({ x, w: edges[i + 1] - x }));
+  // 分割軸に沿った元画像の長さ（横分割なら幅、縦分割なら高さ）
+  function axisLen() {
+    return state.axis === 'y' ? state.img.naturalHeight : state.img.naturalWidth;
   }
 
-  // 隣のハンドルと最小幅の内側に収めたうえで、均等位置には軽く吸着させる
-  function moveCut(i, srcX) {
-    const W = state.img.naturalWidth;
-    const lo = (i === 0 ? 0 : state.cuts[i - 1] * W) + MIN_PIECE_W;
-    const hi = (i === state.cuts.length - 1 ? W : state.cuts[i + 1] * W) - MIN_PIECE_W;
-    if (lo > hi) return;   // 元画像が狭すぎて動かす余地がない
-    let x = Math.max(lo, Math.min(hi, srcX));
-    const target = ((i + 1) / state.split) * W;
-    if (Math.abs(x - target) < SNAP_DIST) x = target;
-    state.cuts[i] = x / W;
+  // 境界を丸めてから長さを出すので、各コマの合計は必ず元画像と一致する。
+  // 横分割・縦分割を同じ描画・書き出しコードで扱えるよう、コマは矩形 {x, y, w, h} で返す
+  function computePieces() {
+    const { naturalWidth: W, naturalHeight: H } = state.img;
+    const edges = [0, ...state.cuts, 1].map((f) => Math.round(f * axisLen()));
+    return edges.slice(0, -1).map((start, i) => {
+      const size = edges[i + 1] - start;
+      return state.axis === 'y'
+        ? { x: 0, y: start, w: W, h: size }
+        : { x: start, y: 0, w: size, h: H };
+    });
+  }
+
+  // 隣のハンドルと最小長の内側に収めたうえで、均等位置には軽く吸着させる。
+  // 吸着はドラッグ向けの補助で、1px単位のキーボード操作では毎回引き戻されて
+  // 均等位置から離れられなくなるため、snap: false で無効にできる
+  function moveCut(i, srcPos, { snap = true } = {}) {
+    const L = axisLen();
+    const lo = (i === 0 ? 0 : state.cuts[i - 1] * L) + MIN_PIECE_LEN;
+    const hi = (i === state.cuts.length - 1 ? L : state.cuts[i + 1] * L) - MIN_PIECE_LEN;
+    if (lo > hi) return;   // 元画像が小さすぎて動かす余地がない
+    let pos = Math.max(lo, Math.min(hi, srcPos));
+    if (snap) {
+      const target = ((i + 1) / state.split) * L;
+      if (Math.abs(pos - target) < SNAP_DIST) pos = target;
+    }
+    state.cuts[i] = pos / L;
     scheduleRender();
   }
 
@@ -215,17 +241,25 @@
       w: img.naturalWidth,
       h: img.naturalHeight,
     });
-    const widths = [...new Set(pieces.map((p) => p.w))].join(' / ');
-    pieceInfoEl.textContent = t('pieceInfo', { widths, h: img.naturalHeight });
+    const vertical = state.axis === 'y';
+    if (vertical) {
+      const heights = [...new Set(pieces.map((p) => p.h))].join(' / ');
+      pieceInfoEl.textContent = t('pieceInfoV', { w: img.naturalWidth, heights });
+    } else {
+      const widths = [...new Set(pieces.map((p) => p.w))].join(' / ');
+      pieceInfoEl.textContent = t('pieceInfo', { widths, h: img.naturalHeight });
+    }
 
     const even = isEven();
     evenBtn.hidden = even;
 
-    // 幅が揃っていないとXでは横に並ばないので、その注意を最優先で出す
-    if (!even) {
+    const minLen = Math.min(...pieces.map((p) => (vertical ? p.h : p.w)));
+    // 横分割で幅が揃っていないとXでは横に並ばないので、その注意を最優先で出す。
+    // 縦分割はXのグリッドが縦に繋がる前提ではないので、この注意は出さない
+    if (!even && !vertical) {
       showWarning(t('warnUneven'));
-    } else if (Math.min(...pieces.map((p) => p.w)) < 300) {
-      showWarning(t('warnNarrow'));
+    } else if (minLen < 300) {
+      showWarning(t(vertical ? 'warnShort' : 'warnNarrow'));
     }
 
     // 書き出し(JPEG圧縮)は重いので、操作が止まってからまとめて走らせる
@@ -236,20 +270,27 @@
   // ハンドルはCanvasではなくDOMで重ねる。掴む範囲を広く取れて、キーボードでも動かせる。
   // 描き直すたびに作り直すとドラッグ中に掴んでいる要素が消えるので、位置だけ更新する
   function renderHandles(img) {
-    const W = img.naturalWidth;
+    const L = axisLen();
+    const vertical = state.axis === 'y';
     let handles = [...stage.querySelectorAll('.handle')];
 
-    if (handles.length !== state.cuts.length) {
+    // 本数か向きが変わったときだけ作り直す
+    if (handles.length !== state.cuts.length || stage.dataset.axis !== state.axis) {
       handles.forEach((el) => el.remove());
       handles = state.cuts.map((_, i) => createHandle(i));
       handles.forEach((el) => stage.appendChild(el));
+      stage.dataset.axis = state.axis;
     }
 
     handles.forEach((el, i) => {
-      el.style.left = state.cuts[i] * 100 + '%';
+      const pct = state.cuts[i] * 100 + '%';
+      el.classList.toggle('is-y', vertical);
+      el.style.left = vertical ? '' : pct;
+      el.style.top = vertical ? pct : '';
+      el.setAttribute('aria-orientation', vertical ? 'vertical' : 'horizontal');
       el.setAttribute('aria-label', t('handleAria', { n: i + 1 }));
-      el.setAttribute('aria-valuemax', String(W));
-      el.setAttribute('aria-valuenow', String(Math.round(state.cuts[i] * W)));
+      el.setAttribute('aria-valuemax', String(L));
+      el.setAttribute('aria-valuenow', String(Math.round(state.cuts[i] * L)));
     });
   }
 
@@ -261,9 +302,12 @@
     el.setAttribute('aria-valuemin', '0');
     el.innerHTML = '<span class="line"></span><span class="grip"><i></i><i></i></span>';
 
-    const toSrcX = (clientX) => {
+    // 画面上のポインタ位置を、分割軸に沿った元画像の座標へ
+    const toSrcPos = (e) => {
       const r = previewCanvas.getBoundingClientRect();
-      return ((clientX - r.left) / r.width) * state.img.naturalWidth;
+      return state.axis === 'y'
+        ? ((e.clientY - r.top) / r.height) * state.img.naturalHeight
+        : ((e.clientX - r.left) / r.width) * state.img.naturalWidth;
     };
 
     el.addEventListener('pointerdown', (e) => {
@@ -278,19 +322,20 @@
     });
     el.addEventListener('pointermove', (e) => {
       if (dragging !== i) return;
-      moveCut(i, toSrcX(e.clientX));
+      moveCut(i, toSrcPos(e));
     });
     el.addEventListener('pointerup', () => {
       dragging = null;
     });
     el.addEventListener('keydown', (e) => {
       const step = e.shiftKey ? 10 : 1;
-      const at = state.cuts[i] * state.img.naturalWidth;
-      if (e.key === 'ArrowLeft') {
-        moveCut(i, at - step);
+      const at = state.cuts[i] * axisLen();
+      // 横分割は←→、縦分割は↑↓が自然だが、どちらのキーでも動くようにしておく
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        moveCut(i, at - step, { snap: false });
         e.preventDefault();
-      } else if (e.key === 'ArrowRight') {
-        moveCut(i, at + step);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        moveCut(i, at + step, { snap: false });
         e.preventDefault();
       }
     });
@@ -315,7 +360,7 @@
     pieces.forEach((p, i) => {
       const label = String(i + 1);
       const lx = Math.round(p.x * scale) + fontSize * 0.6;
-      const ly = fontSize * 0.5;
+      const ly = Math.round(p.y * scale) + fontSize * 0.5;
       const pad = fontSize * 0.35;
       const tw = ctx.measureText(label).width;
       ctx.fillStyle = 'rgba(19, 21, 19, 0.75)';
@@ -327,6 +372,8 @@
 
   function renderPieceCards(img, pieces) {
     piecesEl.innerHTML = '';
+    const stacked = state.axis === 'y';
+    piecesEl.classList.toggle('is-stacked', stacked);
     const ext = state.format === 'png' ? 'png' : 'jpg';
 
     pieces.forEach((p, i) => {
@@ -335,12 +382,12 @@
 
       const thumb = document.createElement('canvas');
       thumb.className = 'piece-thumb';
-      const tScale = Math.min(1, THUMB_MAX_W / p.w);
+      const tScale = Math.min(1, (stacked ? THUMB_MAX_W_STACKED : THUMB_MAX_W) / p.w);
       thumb.width = Math.round(p.w * tScale);
-      thumb.height = Math.round(img.naturalHeight * tScale);
+      thumb.height = Math.round(p.h * tScale);
       thumb.getContext('2d').drawImage(
         img,
-        p.x, 0, p.w, img.naturalHeight,
+        p.x, p.y, p.w, p.h,
         0, 0, thumb.width, thumb.height
       );
 
@@ -348,7 +395,7 @@
       head.className = 'piece-head';
       head.innerHTML =
         `<span class="piece-num">${i + 1}</span>` +
-        `<span class="piece-size">${p.w} x ${img.naturalHeight}</span>`;
+        `<span class="piece-size">${p.w} x ${p.h}</span>`;
 
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -370,14 +417,14 @@
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       canvas.width = piece.w;
-      canvas.height = img.naturalHeight;
+      canvas.height = piece.h;
       const ctx = canvas.getContext('2d');
       if (state.format === 'jpeg') {
         // 透過PNG対策: JPEGは透過できないので白で敷く
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-      ctx.drawImage(img, piece.x, 0, piece.w, img.naturalHeight, 0, 0, piece.w, img.naturalHeight);
+      ctx.drawImage(img, piece.x, piece.y, piece.w, piece.h, 0, 0, piece.w, piece.h);
       const mime = state.format === 'png' ? 'image/png' : 'image/jpeg';
       canvas.toBlob(
         (blob) => (blob ? resolve(blob) : reject(new Error(t('warnExportFailed')))),
@@ -406,7 +453,7 @@
   let blobCache = { key: null, promise: null };
 
   function getAllBlobs() {
-    const key = `${state.imgId}:${state.format}:${state.cuts.join(',')}`;
+    const key = `${state.imgId}:${state.format}:${state.axis}:${state.cuts.join(',')}`;
     if (blobCache.key !== key) {
       const pieces = computePieces();
       blobCache = {
