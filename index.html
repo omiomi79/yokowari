@@ -58,7 +58,7 @@
           </div>
         </div>
       </div>
-      <p class="tagline" data-i18n="tagline">画像を横に3・4分割して、X（Twitter）にそのまま投稿できる形でダウンロード。</p>
+      <p class="tagline" data-i18n="tagline">画像を横に3・4分割（最大20分割）して、X（Twitter）にそのまま投稿できる形でダウンロード。</p>
     </header>
 
     <main>
@@ -86,6 +86,16 @@
             <div class="segmented" role="radiogroup" data-i18n-aria="splitLabel" aria-label="分割数">
               <button type="button" class="seg-btn is-active" data-split="3" role="radio" aria-checked="true" data-i18n="split3">3分割</button>
               <button type="button" class="seg-btn" data-split="4" role="radio" aria-checked="false" data-i18n="split4">4分割</button>
+              <button type="button" class="seg-btn" data-split="custom" role="radio" aria-checked="false" data-i18n="splitCustom">n分割</button>
+            </div>
+          </div>
+          <div class="control-group" id="custom-split" hidden>
+            <span class="control-label" data-i18n="customLabel">枚数（2〜20）</span>
+            <div class="stepper">
+              <button type="button" class="step-btn" id="split-minus" data-i18n-aria="splitMinus" aria-label="1枚減らす">−</button>
+              <input type="number" id="split-input" class="step-input" min="2" max="20" step="1" value="5"
+                     inputmode="numeric" data-i18n-aria="customLabel" aria-label="枚数（2〜20）" />
+              <button type="button" class="step-btn" id="split-plus" data-i18n-aria="splitPlus" aria-label="1枚増やす">＋</button>
             </div>
           </div>
           <div class="control-group">

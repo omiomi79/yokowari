@@ -273,6 +273,46 @@ a.page-switch-item:focus-visible {
   outline-offset: -2px;
 }
 
+.stepper {
+  display: inline-flex;
+  border: 1px solid var(--mat-edge);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-raise);
+}
+
+.step-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 40px;
+  cursor: pointer;
+}
+.step-btn:hover { background: var(--mat); color: var(--guide); }
+.step-btn:focus-visible { outline: 2px solid var(--guide); outline-offset: -2px; }
+
+.step-input {
+  width: 56px;
+  border: none;
+  border-left: 1px solid var(--mat-edge);
+  border-right: 1px solid var(--mat-edge);
+  background: transparent;
+  color: var(--guide);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 0;
+  -moz-appearance: textfield;
+}
+.step-input::-webkit-outer-spin-button,
+.step-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.step-input:focus-visible { outline: 2px solid var(--guide); outline-offset: -2px; }
+
 .text-btn {
   appearance: none;
   border: none;

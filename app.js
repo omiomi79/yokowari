@@ -146,11 +146,40 @@
   }
 
   // 分割数の切り替えはヨコ割ページにだけある。タテ割ページではボタンが無いので何も束縛されない
-  bindSegmented('split', (v) => {
-    state.split = Number(v);
+  // 「n分割」は2〜20枚の任意枚数。Xの1投稿の上限が20枚になったのに合わせている
+  const SPLIT_MIN = 2;
+  const SPLIT_MAX = 20;
+  const customSplitEl = document.getElementById('custom-split');
+  const splitInput = document.getElementById('split-input');
+  const splitMinus = document.getElementById('split-minus');
+  const splitPlus = document.getElementById('split-plus');
+
+  // fromCustom: n分割の欄から来た値だけ欄に書き戻す（3・4分割を選んでも入力済みの枚数は残す）
+  function setSplit(n, fromCustom = false) {
+    n = Math.max(SPLIT_MIN, Math.min(SPLIT_MAX, Math.round(n) || SPLIT_MIN));
+    if (fromCustom && splitInput) splitInput.value = String(n);
+    if (n === state.split) return;
+    state.split = n;
     evenCuts();   // ハンドルの本数が変わるため位置を作り直す
     render();
+  }
+
+  bindSegmented('split', (v) => {
+    const custom = v === 'custom';
+    if (customSplitEl) customSplitEl.hidden = !custom;
+    if (custom) setSplit(Number(splitInput.value), true);
+    else setSplit(Number(v));
   });
+
+  if (splitInput) {
+    // 入力途中（空欄や「1」→「12」）で毎回作り直さないよう、確定時に反映する
+    splitInput.addEventListener('change', () => setSplit(Number(splitInput.value), true));
+    splitInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') setSplit(Number(splitInput.value), true);
+    });
+    splitMinus.addEventListener('click', () => setSplit(state.split - 1, true));
+    splitPlus.addEventListener('click', () => setSplit(state.split + 1, true));
+  }
 
   bindSegmented('format', (v) => {
     state.format = v;
